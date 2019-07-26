@@ -41,20 +41,18 @@
             }
         },
         mounted () {
-            this.items = [
-                { text: 'Primer recordatorio', done: true },
-                { text: 'Segundo recordatorio', done: false },
-                { text: 'Tercero recordatorio', done: false },
-                { text: 'Cuarto recordatorio', done: true },
-                { text: 'Quinto recordatorio', done: false },
-            ]
+            axios.get('/api/todos').then(response => {
+                this.items=response.data;
+            });
         },
         methods: {
             addTodo () {
                 let text = this.todoItemText.trim()
                 if (text !== '') {
-                    this.items.push({ text: text, done: false })
-                    this.todoItemText = ''
+                    axios.post('/api/todos', {text}).then(response => {
+                        this.items.push(response.data);
+                        this.todoItemText = ''
+                    });
                 }
             },
             removeTodo (todo) {
