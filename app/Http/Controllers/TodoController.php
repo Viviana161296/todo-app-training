@@ -69,6 +69,7 @@ class TodoController extends Controller
      */
     public function delete($id)
     {
-        // TODO
+        $todo = todo::findOrFail($id);
+        $todo -> delete();
     }
 }
