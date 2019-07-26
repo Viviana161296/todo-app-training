@@ -31883,6 +31883,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         },
         toggleDone: function toggleDone(todo) {
             todo.done = !todo.done;
+            axios.put('/api/todos/' + todo.id, { done: todo.done });
         }
     }
 });
