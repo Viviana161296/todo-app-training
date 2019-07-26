@@ -18,7 +18,7 @@
                     {{ todo.text }}
                 </td>
                 <td class="is-narrow">
-                    <a class="button is-danger is-small" @click="removeTodo(todo)">Eliminar</a>
+                    <a class="button is-danger is-small" @click="removeTodo(todo, index)">Eliminar</a>
                 </td>
             </tr>
         </table>
@@ -55,8 +55,10 @@
                     });
                 }
             },
-            removeTodo (todo) {
-                this.items = this.items.filter(item => item !== todo)
+            removeTodo (todo, index) {
+                axios.delete(`/api/todos/${todo.id}`).then(()=>{
+                    this.items.splice(index, 1);
+                });
             },
            toggleDone (todo) {
                 todo.done = !todo.done;

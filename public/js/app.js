@@ -31876,9 +31876,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 });
             }
         },
-        removeTodo: function removeTodo(todo) {
-            this.items = this.items.filter(function (item) {
-                return item !== todo;
+        removeTodo: function removeTodo(todo, index) {
+            var _this3 = this;
+
+            axios.delete('/api/todos/' + todo.id).then(function () {
+                _this3.items.splice(index, 1);
             });
         },
         toggleDone: function toggleDone(todo) {
@@ -31964,7 +31966,7 @@ var render = function() {
                 staticClass: "button is-danger is-small",
                 on: {
                   click: function($event) {
-                    return _vm.removeTodo(todo)
+                    return _vm.removeTodo(todo, index)
                   }
                 }
               },
