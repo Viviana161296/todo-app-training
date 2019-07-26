@@ -53,7 +53,11 @@ class TodoController extends Controller
      */
     public function update($id, Request $request)
     {
-        // TODO
+        $todo = Todo::findOrFail($id);
+        $todo -> done = request('done');
+        $todo -> save();
+
+        return $todo;
     }
 
     /**

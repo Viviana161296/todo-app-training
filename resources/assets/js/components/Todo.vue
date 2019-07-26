@@ -58,8 +58,9 @@
             removeTodo (todo) {
                 this.items = this.items.filter(item => item !== todo)
             },
-            toggleDone (todo) {
-                todo.done = !todo.done
+           toggleDone (todo) {
+                todo.done = !todo.done;
+                axios.put(`/api/todos/${todo.id}`, {done: todo.done});
             }
         }
     }
