@@ -70,7 +70,7 @@
 "use strict";
 
 
-var bind = __webpack_require__(3);
+var bind = __webpack_require__(4);
 var isBuffer = __webpack_require__(17);
 
 /*global toString:true*/
@@ -424,10 +424,10 @@ function getDefaultAdapter() {
   var adapter;
   if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
-    adapter = __webpack_require__(5);
+    adapter = __webpack_require__(6);
   } else if (typeof process !== 'undefined') {
     // For node use HTTP adapter
-    adapter = __webpack_require__(5);
+    adapter = __webpack_require__(6);
   }
   return adapter;
 }
@@ -498,10 +498,119 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -519,7 +628,7 @@ module.exports = function bind(fn, thisArg) {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -709,7 +818,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -720,7 +829,7 @@ var settle = __webpack_require__(20);
 var buildURL = __webpack_require__(22);
 var parseHeaders = __webpack_require__(23);
 var isURLSameOrigin = __webpack_require__(24);
-var createError = __webpack_require__(6);
+var createError = __webpack_require__(7);
 var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(25);
 
 module.exports = function xhrAdapter(config) {
@@ -896,7 +1005,7 @@ module.exports = function xhrAdapter(config) {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -921,7 +1030,7 @@ module.exports = function createError(message, config, code, request, response) 
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -933,7 +1042,7 @@ module.exports = function isCancel(value) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -959,120 +1068,11 @@ module.exports = Cancel;
 
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
-
-/***/ }),
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(11);
-module.exports = __webpack_require__(49);
+module.exports = __webpack_require__(52);
 
 
 /***/ }),
@@ -1096,7 +1096,8 @@ window.Vue = __webpack_require__(34);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 Vue.component('todo-component', __webpack_require__(38));
-Vue.component('todo-input', __webpack_require__(46));
+Vue.component('todo-input', __webpack_require__(41));
+Vue.component('todo-item', __webpack_require__(44));
 
 var app = new Vue({
   el: '#app'
@@ -18295,7 +18296,7 @@ module.exports = __webpack_require__(16);
 
 
 var utils = __webpack_require__(0);
-var bind = __webpack_require__(3);
+var bind = __webpack_require__(4);
 var Axios = __webpack_require__(18);
 var defaults = __webpack_require__(2);
 
@@ -18330,9 +18331,9 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__(8);
+axios.Cancel = __webpack_require__(9);
 axios.CancelToken = __webpack_require__(32);
-axios.isCancel = __webpack_require__(7);
+axios.isCancel = __webpack_require__(8);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -18492,7 +18493,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 "use strict";
 
 
-var createError = __webpack_require__(6);
+var createError = __webpack_require__(7);
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -18911,7 +18912,7 @@ module.exports = InterceptorManager;
 
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(29);
-var isCancel = __webpack_require__(7);
+var isCancel = __webpack_require__(8);
 var defaults = __webpack_require__(2);
 
 /**
@@ -19064,7 +19065,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 "use strict";
 
 
-var Cancel = __webpack_require__(8);
+var Cancel = __webpack_require__(9);
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -31373,26 +31374,22 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(5)))
 
 /***/ }),
 /* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(39)
-}
-var normalizeComponent = __webpack_require__(9)
+var normalizeComponent = __webpack_require__(3)
 /* script */
-var __vue_script__ = __webpack_require__(44)
+var __vue_script__ = __webpack_require__(39)
 /* template */
-var __vue_template__ = __webpack_require__(45)
+var __vue_template__ = __webpack_require__(40)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
-var __vue_styles__ = injectStyle
+var __vue_styles__ = null
 /* scopeId */
 var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
@@ -31428,22 +31425,306 @@ module.exports = Component.exports
 
 /***/ }),
 /* 39 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/**
+ * Tips:
+ * - En mounted pueden obtener el listado del backend de todos y dentro de la promesa de axios asirnarlo
+ *   al arreglo que debe tener una estructura similar a los datos de ejemplo.
+ * - En addTodo, removeTodo y toggleTodo deben hacer los cambios pertinentes para que las modificaciones,
+ *   addiciones o elimicaiones tomen efecto en el backend asi como la base de datos.
+ */
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            items: []
+        };
+    },
+    mounted: function mounted() {
+        var _this = this;
+
+        axios.get('/api/todos').then(function (response) {
+            _this.items = response.data;
+        });
+    },
+
+    methods: {
+        addTodo: function addTodo(todo) {
+            this.items.push(todo);
+        },
+        removeTodo: function removeTodo(index) {
+            this.items.splice(index, 1);
+        },
+        toggleDone: function toggleDone(index, todo) {
+            this.items.splice(index, 1, todo);
+        }
+    }
+});
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { staticClass: "container" },
+    [
+      _c("todo-input", { on: { newTodo: _vm.addTodo } }),
+      _vm._v(" "),
+      _c("todo-item", {
+        attrs: { items: _vm.items },
+        on: { delete: _vm.removeTodo, completed: _vm.toggleDone }
+      })
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-c7891406", module.exports)
+  }
+}
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(42)
+/* template */
+var __vue_template__ = __webpack_require__(43)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/TodoInput.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-b6546e06", Component.options)
+  } else {
+    hotAPI.reload("data-v-b6546e06", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    data: function data() {
+        return {
+            todoItemText: ''
+        };
+    },
+    mounted: function mounted() {
+        console.log('Component mounted.');
+    },
+
+    methods: {
+        addTodo: function addTodo() {
+            var _this = this;
+
+            var text = this.todoItemText.trim();
+            if (text !== '') {
+                axios.post('/api/todos', { text: text }).then(function (response) {
+                    var todo = response.data;
+                    _this.$emit('newTodo', todo);
+                    _this.todoItemText = '';
+                });
+            }
+        }
+    }
+});
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "box" }, [
+    _c("div", { staticClass: "field is-grouped" }, [
+      _c("p", { staticClass: "control is-expanded" }, [
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.todoItemText,
+              expression: "todoItemText"
+            }
+          ],
+          staticClass: "input",
+          attrs: { type: "text", placeholder: "Nuevo recordatorio" },
+          domProps: { value: _vm.todoItemText },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.todoItemText = $event.target.value
+            }
+          }
+        })
+      ]),
+      _vm._v(" "),
+      _c("p", { staticClass: "control" }, [
+        _c("a", { staticClass: "button is-info", on: { click: _vm.addTodo } }, [
+          _vm._v("\n                Agregar\n            ")
+        ])
+      ])
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-b6546e06", module.exports)
+  }
+}
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(45)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+var __vue_script__ = __webpack_require__(50)
+/* template */
+var __vue_template__ = __webpack_require__(51)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/TodoItem.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-14d94da0", Component.options)
+  } else {
+    hotAPI.reload("data-v-14d94da0", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(40);
+var content = __webpack_require__(46);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(42)("1c547a12", content, false, {});
+var update = __webpack_require__(48)("b88ef4d4", content, false, {});
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-c7891406\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Todo.vue", function() {
-     var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-c7891406\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./Todo.vue");
+   module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-14d94da0\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TodoItem.vue", function() {
+     var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-14d94da0\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./TodoItem.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -31453,10 +31734,10 @@ if(false) {
 }
 
 /***/ }),
-/* 40 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(41)(false);
+exports = module.exports = __webpack_require__(47)(false);
 // imports
 
 
@@ -31467,7 +31748,7 @@ exports.push([module.i, "\n.is-done {\n    text-decoration: line-through;\n}\n",
 
 
 /***/ }),
-/* 41 */
+/* 47 */
 /***/ (function(module, exports) {
 
 /*
@@ -31549,7 +31830,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 42 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -31568,7 +31849,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(43)
+var listToStyles = __webpack_require__(49)
 
 /*
 type StyleObject = {
@@ -31777,7 +32058,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 43 */
+/* 49 */
 /***/ (function(module, exports) {
 
 /**
@@ -31810,187 +32091,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 44 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/**
- * Tips:
- * - En mounted pueden obtener el listado del backend de todos y dentro de la promesa de axios asirnarlo
- *   al arreglo que debe tener una estructura similar a los datos de ejemplo.
- * - En addTodo, removeTodo y toggleTodo deben hacer los cambios pertinentes para que las modificaciones,
- *   addiciones o elimicaiones tomen efecto en el backend asi como la base de datos.
- */
-/* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            todoItemText: '',
-            items: []
-        };
-    },
-    mounted: function mounted() {
-        var _this = this;
-
-        axios.get('/api/todos').then(function (response) {
-            _this.items = response.data;
-        });
-    },
-
-    methods: {
-        addTodo: function addTodo(todo) {
-            this.items.push(todo);
-        },
-        removeTodo: function removeTodo(todo, index) {
-            var _this2 = this;
-
-            axios.delete('/api/todos/' + todo.id).then(function () {
-                _this2.items.splice(index, 1);
-            });
-        },
-        toggleDone: function toggleDone(todo) {
-            todo.done = !todo.done;
-            axios.put('/api/todos/' + todo.id, { done: todo.done });
-        }
-    }
-});
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { staticClass: "container" },
-    [
-      _c("todo-input", { on: { newTodo: _vm.addTodo } }),
-      _vm._v(" "),
-      _c(
-        "table",
-        { staticClass: "table is-bordered" },
-        _vm._l(_vm.items, function(todo, index) {
-          return _c("tr", { key: index }, [
-            _c(
-              "td",
-              {
-                staticClass: "is-fullwidth",
-                class: { "is-done": todo.done },
-                staticStyle: { cursor: "pointer" },
-                on: {
-                  click: function($event) {
-                    return _vm.toggleDone(todo)
-                  }
-                }
-              },
-              [
-                _vm._v(
-                  "\n                " + _vm._s(todo.text) + "\n            "
-                )
-              ]
-            ),
-            _vm._v(" "),
-            _c("td", { staticClass: "is-narrow" }, [
-              _c(
-                "a",
-                {
-                  staticClass: "button is-danger is-small",
-                  on: {
-                    click: function($event) {
-                      return _vm.removeTodo(todo, index)
-                    }
-                  }
-                },
-                [_vm._v("Eliminar")]
-              )
-            ])
-          ])
-        }),
-        0
-      )
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-c7891406", module.exports)
-  }
-}
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(9)
-/* script */
-var __vue_script__ = __webpack_require__(47)
-/* template */
-var __vue_template__ = __webpack_require__(48)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/TodoInput.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-b6546e06", Component.options)
-  } else {
-    hotAPI.reload("data-v-b6546e06", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 47 */
+/* 50 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -32014,71 +32115,81 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    data: function data() {
-        return {
-            todoItemText: ''
-        };
-    },
+    props: ['items'],
     mounted: function mounted() {
         console.log('Component mounted.');
     },
 
     methods: {
-        addTodo: function addTodo() {
+        removeTodo: function removeTodo(todo, index) {
             var _this = this;
 
-            var text = this.todoItemText.trim();
-            if (text !== '') {
-                axios.post('/api/todos', { text: text }).then(function (response) {
-                    var todo = response.data;
-                    _this.$emit('newTodo', todo);
-                    _this.todoItemText = '';
-                });
-            }
+            axios.delete('/api/todos/' + todo.id).then(function () {
+                _this.$emit('delete', index);
+            });
+        },
+        toggleDone: function toggleDone(index, todo) {
+            var _this2 = this;
+
+            axios.put('/api/todos/' + todo.id, { done: !todo.done }).then(function (response) {
+                var todo = response.data;
+                _this2.$emit('completed', index, todo);
+            });
         }
     }
 });
 
 /***/ }),
-/* 48 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "box" }, [
-    _c("div", { staticClass: "field is-grouped" }, [
-      _c("p", { staticClass: "control is-expanded" }, [
-        _c("input", {
-          directives: [
+  return _c("div", [
+    _c(
+      "table",
+      { staticClass: "table is-bordered" },
+      _vm._l(_vm.items, function(todo, index) {
+        return _c("tr", { key: index }, [
+          _c(
+            "td",
             {
-              name: "model",
-              rawName: "v-model",
-              value: _vm.todoItemText,
-              expression: "todoItemText"
-            }
-          ],
-          staticClass: "input",
-          attrs: { type: "text", placeholder: "Nuevo recordatorio" },
-          domProps: { value: _vm.todoItemText },
-          on: {
-            input: function($event) {
-              if ($event.target.composing) {
-                return
+              staticClass: "is-fullwidth",
+              class: { "is-done": todo.done },
+              staticStyle: { cursor: "pointer" },
+              on: {
+                click: function($event) {
+                  return _vm.toggleDone(index, todo)
+                }
               }
-              _vm.todoItemText = $event.target.value
-            }
-          }
-        })
-      ]),
-      _vm._v(" "),
-      _c("p", { staticClass: "control" }, [
-        _c("a", { staticClass: "button is-info", on: { click: _vm.addTodo } }, [
-          _vm._v("\n                Agregar\n            ")
+            },
+            [
+              _vm._v(
+                "\n                " + _vm._s(todo.text) + "\n            "
+              )
+            ]
+          ),
+          _vm._v(" "),
+          _c("td", { staticClass: "is-narrow" }, [
+            _c(
+              "a",
+              {
+                staticClass: "button is-danger is-small",
+                on: {
+                  click: function($event) {
+                    return _vm.removeTodo(todo, index)
+                  }
+                }
+              },
+              [_vm._v("Eliminar")]
+            )
+          ])
         ])
-      ])
-    ])
+      }),
+      0
+    )
   ])
 }
 var staticRenderFns = []
@@ -32087,12 +32198,12 @@ module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-b6546e06", module.exports)
+    require("vue-hot-reload-api")      .rerender("data-v-14d94da0", module.exports)
   }
 }
 
 /***/ }),
-/* 49 */
+/* 52 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
