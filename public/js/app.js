@@ -1136,6 +1136,44 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     state: {
         items: [],
         todoItemText: ''
+    },
+
+    getters: {
+        getItems: function getItems(state) {
+            return state.items;
+        },
+        getItemText: function getItemText(state) {
+            return state.todoItemText;
+        }
+    },
+
+    mutations: {
+        GET_TODO: function GET_TODO(state) {
+            axios.get('/api/todos').then(function (response) {
+                state.items = response.data;
+            });
+        },
+        ADD_TODO: function ADD_TODO(state, itemText) {
+            var text = itemText.trim();
+            if (text !== '') {
+                axios.post('/api/todos', { text: text }).then(function (response) {
+                    var todo = response.data;
+                    state.items.push(todo);
+                    state.todoItemText = '';
+                });
+            }
+        },
+        DELETE_TODO: function DELETE_TODO(state, payload) {
+            axios.delete('/api/todos/' + payload.todo.id).then(function () {
+                state.items.splice(payload.index, 1);
+            });
+        },
+        UPDATE_TODO: function UPDATE_TODO(state, payload) {
+            axios.put('/api/todos/' + payload.todo.id, { done: !payload.todo.done }).then(function (response) {
+                var todo = response.data;
+                state.items.splice(payload.index, 1, todo);
+            });
+        }
     }
 });
 
@@ -32415,17 +32453,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  *   addiciones o elimicaiones tomen efecto en el backend asi como la base de datos.
  */
 /* harmony default export */ __webpack_exports__["default"] = ({
-    computed: {
-        items: function items() {
-            return this.$store.state.items;
-        }
-    },
     mounted: function mounted() {
-        var _this = this;
-
-        axios.get('/api/todos').then(function (response) {
-            _this.$store.state.items = response.data;
-        });
+        this.$store.commit('GET_TODO');
     }
 });
 
@@ -32527,11 +32556,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     computed: {
-        items: function items() {
-            return this.$store.state.items;
-        },
-        todoItemText: function todoItemText() {
-            return this.$store.state.todoItemText;
+        itemText: function itemText() {
+            return this.$store.getters.getItemText;
         }
     },
     mounted: function mounted() {
@@ -32540,16 +32566,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     methods: {
         addTodo: function addTodo() {
-            var _this = this;
-
-            var text = this.$store.state.todoItemText.trim();
-            if (text !== '') {
-                axios.post('/api/todos', { text: text }).then(function (response) {
-                    var todo = response.data;
-                    _this.$store.state.items.push(todo);
-                    _this.$store.state.todoItemText = '';
-                });
-            }
+            this.$store.commit('ADD_TODO', this.itemText);
         }
     }
 });
@@ -33067,7 +33084,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
     computed: {
         items: function items() {
-            return this.$store.state.items;
+            return this.$store.getters.getItems;
         }
     },
     mounted: function mounted() {
@@ -33076,18 +33093,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     methods: {
         removeTodo: function removeTodo(todo, index) {
-            var _this = this;
-
-            axios.delete('/api/todos/' + todo.id).then(function () {
-                _this.$store.state.items.splice(index, 1);
+            this.$store.commit({
+                type: 'DELETE_TODO',
+                index: index,
+                todo: todo
             });
         },
         toggleDone: function toggleDone(index, todo) {
-            var _this2 = this;
-
-            axios.put('/api/todos/' + todo.id, { done: !todo.done }).then(function (response) {
-                var todo = response.data;
-                _this2.$store.state.items.splice(index, 1, todo);
+            this.$store.commit({
+                type: 'UPDATE_TODO',
+                index: index,
+                todo: todo
             });
         }
     }

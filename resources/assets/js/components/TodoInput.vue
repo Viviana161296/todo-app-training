@@ -16,29 +16,18 @@
 
 <script>
 
-
     export default {
         computed: {
-            items() {
-                return this.$store.state.items;
-            },
-            todoItemText () {
-                return this.$store.state.todoItemText;
-            } 
+            itemText() {
+                return this.$store.getters.getItemText;
+            }
         },
         mounted () {
            console.log('Component mounted.')
         },
         methods: {
             addTodo () {
-                let text = this.$store.state.todoItemText.trim()
-                if (text !== '') {
-                    axios.post('/api/todos', {text}).then(response => {
-                        const todo=(response.data);
-                        this.$store.state.items.push(todo);
-                        this.$store.state.todoItemText = '';
-                    });
-                }
+                this.$store.commit('ADD_TODO', this.itemText);
             }
         }
     }

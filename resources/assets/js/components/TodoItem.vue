@@ -19,7 +19,7 @@
     export default {  
         computed: {
             items() {
-                return this.$store.state.items;
+                return this.$store.getters.getItems;
             } 
         },
         mounted () {
@@ -27,14 +27,17 @@
         },
         methods: {
            removeTodo (todo, index) {
-                axios.delete(`/api/todos/${todo.id}`).then(() => {
-                    this.$store.state.items.splice(index, 1);
+                this.$store.commit({
+                    type: 'DELETE_TODO',
+                    index: index,
+                    todo: todo
                 });
             },
            toggleDone (index, todo) {
-                axios.put(`/api/todos/${todo.id}`, {done: !todo.done}).then(response => {
-                    const todo=(response.data);
-                    this.$store.state.items.splice(index, 1, todo);
+                this.$store.commit({
+                    type: 'UPDATE_TODO',
+                    index: index,
+                    todo: todo
                 });
             }
         }
