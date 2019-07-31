@@ -16,21 +16,28 @@
 
 <script>
    
-    export default {
-        props:['items'],
+    export default {  
+        computed: {
+            items() {
+                return this.$store.getters.getItems;
+            } 
+        },
         mounted () {
             console.log('Component mounted.') 
         },
         methods: {
            removeTodo (todo, index) {
-                axios.delete(`/api/todos/${todo.id}`).then(() => {
-                    this.$emit('delete', index);
+                this.$store.dispatch({
+                    type: 'deleteTodo',
+                    index: index,
+                    todo: todo
                 });
             },
            toggleDone (index, todo) {
-                axios.put(`/api/todos/${todo.id}`, {done: !todo.done}).then(response => {
-                    const todo=(response.data);
-                    this.$emit('completed', index, todo);
+                this.$store.dispatch({
+                    type: 'updateTodo',
+                    index: index,
+                    todo: todo
                 });
             }
         }

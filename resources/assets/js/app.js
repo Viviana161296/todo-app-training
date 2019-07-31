@@ -1,4 +1,4 @@
-
+import {store} from './vuex/store';
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -19,5 +19,6 @@ Vue.component('todo-input', require('./components/TodoInput.vue'));
 Vue.component('todo-item', require('./components/TodoItem.vue'));
 
 const app = new Vue({
-    el: '#app'
+    el: '#app',
+    store
 });
