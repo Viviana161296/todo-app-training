@@ -1,11 +1,7 @@
 <template>
     <div class="container">
-        <todo-input @newTodo='addTodo'></todo-input>
-        <todo-item 
-            :items='items'
-            @delete="removeTodo"
-            @completed="toggleDone">
-        </todo-item>
+        <todo-input></todo-input>
+        <todo-item></todo-item>
     </div>
 </template>
 
@@ -18,26 +14,15 @@
      *   addiciones o elimicaiones tomen efecto en el backend asi como la base de datos.
      */
     export default {
-        data () {
-            return {
-                items: [],
-            }
-        },
+        computed: {
+            items() {
+                return this.$store.state.items;
+            } 
+        },  
         mounted () {
             axios.get('/api/todos').then(response => {
-                this.items=response.data;
+                this.$store.state.items=response.data;
             });
-        },
-        methods: {
-            addTodo (todo) {
-                this.items.push(todo);
-            },
-            removeTodo (index) {
-                this.items.splice(index, 1);
-            },
-            toggleDone (index, todo) {
-                this.items.splice(index, 1, todo);
-            }
         }
     }
 </script>
