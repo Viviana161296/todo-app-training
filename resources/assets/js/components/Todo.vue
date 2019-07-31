@@ -15,7 +15,7 @@
      */
     export default { 
         mounted () {
-            this.$store.commit('GET_TODO');
+            this.$store.dispatch('getTodo');
         }
     }
 </script>

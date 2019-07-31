@@ -1174,6 +1174,21 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
                 state.items.splice(payload.index, 1, todo);
             });
         }
+    },
+
+    actions: {
+        getTodo: function getTodo(context) {
+            context.commit('GET_TODO');
+        },
+        addTodo: function addTodo(context, itemText) {
+            context.commit('ADD_TODO', itemText);
+        },
+        deleteTodo: function deleteTodo(context, payload) {
+            context.commit('DELETE_TODO', payload);
+        },
+        updateTodo: function updateTodo(context, payload) {
+            context.commit('UPDATE_TODO', payload);
+        }
     }
 });
 
@@ -32454,7 +32469,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  */
 /* harmony default export */ __webpack_exports__["default"] = ({
     mounted: function mounted() {
-        this.$store.commit('GET_TODO');
+        this.$store.dispatch('getTodo');
     }
 });
 
@@ -32566,7 +32581,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     methods: {
         addTodo: function addTodo() {
-            this.$store.commit('ADD_TODO', this.itemText);
+            this.$store.dispatch('addTodo', this.itemText);
         }
     }
 });
@@ -33093,15 +33108,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
     methods: {
         removeTodo: function removeTodo(todo, index) {
-            this.$store.commit({
-                type: 'DELETE_TODO',
+            this.$store.dispatch({
+                type: 'deleteTodo',
                 index: index,
                 todo: todo
             });
         },
         toggleDone: function toggleDone(index, todo) {
-            this.$store.commit({
-                type: 'UPDATE_TODO',
+            this.$store.dispatch({
+                type: 'updateTodo',
                 index: index,
                 todo: todo
             });

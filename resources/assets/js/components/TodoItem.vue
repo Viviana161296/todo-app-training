@@ -27,15 +27,15 @@
         },
         methods: {
            removeTodo (todo, index) {
-                this.$store.commit({
-                    type: 'DELETE_TODO',
+                this.$store.dispatch({
+                    type: 'deleteTodo',
                     index: index,
                     todo: todo
                 });
             },
            toggleDone (index, todo) {
-                this.$store.commit({
-                    type: 'UPDATE_TODO',
+                this.$store.dispatch({
+                    type: 'updateTodo',
                     index: index,
                     todo: todo
                 });

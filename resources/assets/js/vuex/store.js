@@ -48,4 +48,19 @@ export const store = new Vuex.Store({
             });
         }
     },
+
+    actions: {
+        getTodo(context){
+            context.commit('GET_TODO');
+        },
+        addTodo(context, itemText){
+            context.commit('ADD_TODO', itemText);
+        },
+        deleteTodo(context, payload){
+            context.commit('DELETE_TODO', payload);
+        },
+        updateTodo(context, payload){
+            context.commit('UPDATE_TODO', payload);
+        }
+    }    
 });
